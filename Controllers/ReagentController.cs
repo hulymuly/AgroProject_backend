@@ -8,9 +8,9 @@ namespace AgroProject.Controllers
     [ApiController]
     public class ReagentController : ControllerBase
     {
-        private readonly AgroDbContext _context;
+        private readonly AppDbContext _context;
 
-        public ReagentController(AgroDbContext context)
+        public ReagentController(AppDbContext context)
         {
             _context = context;
         }

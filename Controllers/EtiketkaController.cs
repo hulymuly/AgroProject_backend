@@ -8,9 +8,9 @@ namespace AgroProject.Controllers
     [ApiController]
     public class EtiketkaController : ControllerBase
     {
-        private readonly AgroDbContext _context;
+        private readonly AppDbContext _context;
 
-        public EtiketkaController(AgroDbContext context)
+        public EtiketkaController(AppDbContext context)
         {
             _context = context;
         }
