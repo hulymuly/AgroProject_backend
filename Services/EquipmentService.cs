@@ -1,138 +1,61 @@
 using AgroProject.Models;
-using AgroProject.DTOs;
-using Microsoft.EntityFrameworkCore;
+using AgroProject.Repositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AgroProject.Services
 {
-    public class EquipmentService
+    public interface IEquipmentService
     {
-        private readonly AgroDbContext _dbContext;
+        Task<IEnumerable<Oborudovanie>> GetAllEquipmentAsync();
+        Task<Oborudovanie> GetEquipmentByIdAsync(int id);
+        Task AddEquipmentAsync(Oborudovanie equipment);
+        Task UpdateEquipmentAsync(int id, Oborudovanie updatedEquipment);
+        Task DeleteEquipmentAsync(int id);
+        Task<IEnumerable<Oborudovanie>> CheckExpiringEquipmentAsync();
+        Task<IEnumerable<AuditLog>> GetEquipmentAuditAsync();
+    }
 
-        public EquipmentService(AgroDbContext dbContext)
+    public class EquipmentService : IEquipmentService
+    {
+        private readonly IEquipmentRepository _equipmentRepository;
+
+        public EquipmentService(IEquipmentRepository equipmentRepository)
         {
-            _dbContext = dbContext;
+            _equipmentRepository = equipmentRepository;
         }
 
-        // Получить все оборудование
-        public async Task<IEnumerable<EquipmentDto>> GetAllEquipmentAsync()
+        public async Task<IEnumerable<Oborudovanie>> GetAllEquipmentAsync()
         {
-            return await _dbContext.Oborudovanie
-                .Select(e => new EquipmentDto
-                {
-                    Id = e.Id,
-                    Name = e.Name,
-                    Kategoria = e.Kategoria,
-                    Model = e.Model,
-                    NomerInvent = e.NomerInvent,
-                    NomerZavod = e.NomerZavod,
-                    DataVvodaVExpluataciu = e.DataVvodaVExpluataciu.HasValue ? e.DataVvodaVExpluataciu.Value.ToDateTime(TimeOnly.MinValue) : null,
-                    NomerSvidetelstva = e.NomerSvidetelstva,
-                    DataProverki = e.DataProverki.HasValue ? e.DataProverki.Value.ToDateTime(TimeOnly.MinValue) : null,
-                    GodenDo = e.GodenDo.HasValue ? e.GodenDo.Value.ToDateTime(TimeOnly.MinValue) : null,
-                    Diametr = e.Diametr,
-                    Dlinna = e.Dlinna,
-                    Visota = e.Visota,
-                    Glubina = e.Glubina,
-                    Shirina = e.Shirina,
-                    DataVivodaIzIspolz = e.DataVivodaIzIspolz.HasValue ? e.DataVivodaIzIspolz.Value.ToDateTime(TimeOnly.MinValue) : null
-                })
-                .ToListAsync();
+            return await _equipmentRepository.GetAllEquipmentAsync();
         }
 
-        // Получить оборудование по ID
-        public async Task<EquipmentDto?> GetEquipmentByIdAsync(int id)
+        public async Task<Oborudovanie> GetEquipmentByIdAsync(int id)
         {
-            var equipment = await _dbContext.Oborudovanie.FindAsync(id);
-            if (equipment == null) return null;
-
-            return new EquipmentDto
-            {
-                Id = equipment.Id,
-                Name = equipment.Name,
-                Kategoria = equipment.Kategoria,
-                Model = equipment.Model,
-                NomerInvent = equipment.NomerInvent,
-                NomerZavod = equipment.NomerZavod,
-                DataVvodaVExpluataciu = equipment.DataVvodaVExpluataciu.HasValue ? equipment.DataVvodaVExpluataciu.Value.ToDateTime(TimeOnly.MinValue) : null,
-                NomerSvidetelstva = equipment.NomerSvidetelstva,
-                DataProverki = equipment.DataProverki.HasValue ? equipment.DataProverki.Value.ToDateTime(TimeOnly.MinValue) : null,
-                GodenDo = equipment.GodenDo.HasValue ? equipment.GodenDo.Value.ToDateTime(TimeOnly.MinValue) : null,
-                Diametr = equipment.Diametr,
-                Dlinna = equipment.Dlinna,
-                Visota = equipment.Visota,
-                Glubina = equipment.Glubina,
-                Shirina = equipment.Shirina,
-                DataVivodaIzIspolz = equipment.DataVivodaIzIspolz.HasValue ? equipment.DataVivodaIzIspolz.Value.ToDateTime(TimeOnly.MinValue) : null
-            };
+            return await _equipmentRepository.GetEquipmentByIdAsync(id);
         }
 
-        // Добавить новое оборудование
-        public async Task<EquipmentDto> CreateEquipmentAsync(EquipmentDto newEquipment)
+        public async Task AddEquipmentAsync(Oborudovanie equipment)
         {
-            var equipment = new Oborudovanie
-            {
-                Name = newEquipment.Name,
-                Kategoria = newEquipment.Kategoria,
-                Model = newEquipment.Model,
-                NomerInvent = newEquipment.NomerInvent,
-                NomerZavod = newEquipment.NomerZavod,
-                DataVvodaVExpluataciu = newEquipment.DataVvodaVExpluataciu.HasValue ? DateOnly.FromDateTime(newEquipment.DataVvodaVExpluataciu.Value) : null,
-                NomerSvidetelstva = newEquipment.NomerSvidetelstva,
-                DataProverki = newEquipment.DataProverki.HasValue ? DateOnly.FromDateTime(newEquipment.DataProverki.Value) : null,
-                GodenDo = newEquipment.GodenDo.HasValue ? DateOnly.FromDateTime(newEquipment.GodenDo.Value) : null,
-                Diametr = newEquipment.Diametr,
-                Dlinna = newEquipment.Dlinna,
-                Visota = newEquipment.Visota,
-                Glubina = newEquipment.Glubina,
-                Shirina = newEquipment.Shirina,
-                DataVivodaIzIspolz = newEquipment.DataVivodaIzIspolz.HasValue ? DateOnly.FromDateTime(newEquipment.DataVivodaIzIspolz.Value) : null
-            };
-
-            _dbContext.Oborudovanie.Add(equipment);
-            await _dbContext.SaveChangesAsync();
-
-            newEquipment.Id = equipment.Id;
-            return newEquipment;
+            await _equipmentRepository.AddEquipmentAsync(equipment);
         }
 
-        // Обновить оборудование
-        public async Task<bool> UpdateEquipmentAsync(int id, EquipmentDto updatedEquipment)
+        public async Task UpdateEquipmentAsync(int id, Oborudovanie updatedEquipment)
         {
-            var equipment = await _dbContext.Oborudovanie.FindAsync(id);
-            if (equipment == null) return false;
-
-            equipment.Name = updatedEquipment.Name;
-            equipment.Kategoria = updatedEquipment.Kategoria;
-            equipment.Model = updatedEquipment.Model;
-            equipment.NomerInvent = updatedEquipment.NomerInvent;
-            equipment.NomerZavod = updatedEquipment.NomerZavod;
-            equipment.DataVvodaVExpluataciu = updatedEquipment.DataVvodaVExpluataciu.HasValue ? DateOnly.FromDateTime(updatedEquipment.DataVvodaVExpluataciu.Value) : null;
-            equipment.NomerSvidetelstva = updatedEquipment.NomerSvidetelstva;
-            equipment.DataProverki = updatedEquipment.DataProverki.HasValue ? DateOnly.FromDateTime(updatedEquipment.DataProverki.Value) : null;
-            equipment.GodenDo = updatedEquipment.GodenDo.HasValue ? DateOnly.FromDateTime(updatedEquipment.GodenDo.Value) : null;
-            equipment.Diametr = updatedEquipment.Diametr;
-            equipment.Dlinna = updatedEquipment.Dlinna;
-            equipment.Visota = updatedEquipment.Visota;
-            equipment.Glubina = updatedEquipment.Glubina;
-            equipment.Shirina = updatedEquipment.Shirina;
-            equipment.DataVivodaIzIspolz = updatedEquipment.DataVivodaIzIspolz.HasValue ? DateOnly.FromDateTime(updatedEquipment.DataVivodaIzIspolz.Value) : null;
-
-            _dbContext.Oborudovanie.Update(equipment);
-            await _dbContext.SaveChangesAsync();
-
-            return true;
+            await _equipmentRepository.UpdateEquipmentAsync(id, updatedEquipment);
         }
 
-        // Удалить оборудование
-        public async Task<bool> DeleteEquipmentAsync(int id)
+        public async Task DeleteEquipmentAsync(int id)
         {
-            var equipment = await _dbContext.Oborudovanie.FindAsync(id);
-            if (equipment == null) return false;
+            await _equipmentRepository.DeleteEquipmentAsync(id);
+        }
 
-            _dbContext.Oborudovanie.Remove(equipment);
-            await _dbContext.SaveChangesAsync();
-
-            return true;
+        public async Task<IEnumerable<Oborudovanie>> CheckExpiringEquipmentAsync()
+        {
+            return await _equipmentRepository.GetExpiringEquipmentAsync();
+               public async Task<IEnumerable<AuditLog>> GetEquipmentAuditAsync()
+        {
+            return await _equipmentRepository.GetEquipmentAuditAsync();
         }
     }
 }

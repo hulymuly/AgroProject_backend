@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using AgroProject.Models;
 using Microsoft.EntityFrameworkCore;
+using AgroProject.Data;
 
 namespace AgroProject.Controllers
 {
@@ -8,12 +9,13 @@ namespace AgroProject.Controllers
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private readonly AgroDbContext _context;
+        private readonly Data.AppDbContext _context;
 
-        public CustomerController(AgroDbContext context)
+        public CustomerController(AppDbContext context)
         {
             _context = context;
         }
+
 
         // GET: api/Customer
         [HttpGet]
