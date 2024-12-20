@@ -33,7 +33,11 @@ namespace AgroProject.Repositories
             await _context.Kultures.AddAsync(culture);
             await _context.SaveChangesAsync();
         }
-
+         public async Task AddCultureByIdAsync(Culture id)
+        {
+            await _context.Kultures.AddAsync(id);
+            await _context.SaveChangesAsync();
+        }
         public async Task DeleteCultureAsync(int id)
         {
             var culture = await _context.Kultures.FindAsync(id);
